@@ -14,9 +14,9 @@ public class TeamSelector extends Plugin {
 
     private int menuId;
     private static final String[][] TEAMS = {
-        { "[#ffd37f]", "SHARDED" },
-        { "[#f25555]", "CRUX" },
-        { "[#dadada]", "НАБЛЮДАТЬ" },
+        { "[#ffd37f]", "Расколотые" },
+        { "[#f25555]", "Агрессоры" },
+        { "[#dadada]", "Наблюдать" },
     };
     private static final String[][] MENU_OPTIONS = {
         { TEAMS[0][0] + TEAMS[0][1] },
@@ -38,13 +38,7 @@ public class TeamSelector extends Plugin {
         float cy = Vars.world.height() * half;
         Call.setPosition(p.con, cx, cy);
         Call.setCameraPosition(p.con, cx, cy);
-        Call.menu(
-            p.con,
-            menuId,
-            "Выбор команды",
-            "Выбери свою команду:",
-            MENU_OPTIONS
-        );
+        Call.menu(p.con, menuId, "", "", MENU_OPTIONS);
     }
 
     @Override
@@ -53,9 +47,9 @@ public class TeamSelector extends Plugin {
             if (p == null || p.con == null) return;
             Team t =
                 opt == 0 ? Team.sharded : opt == 1 ? Team.crux : Team.derelict;
-            p.name = TEAMS[opt][0] + clean(p.name) + "[]";
+            p.name = TEAMS[opt][0] + clean(p.name) + "";
             p.team(t);
-            //Call.sendMessage("+" + t.emoji + " " + p.name); // если кому надо в чатик настрочить
+            //Call.sendMessage("+" + t.emoji + " " + p.name); // если надо в чатик настрочить
             if (t != Team.derelict) p.checkSpawn();
         });
 
@@ -64,7 +58,7 @@ public class TeamSelector extends Plugin {
 
         // Событие при загрузке новой карты (небольшая задержка для синхронизации)
         Events.on(EventType.WorldLoadEvent.class, e ->
-            Time.runTask(15, () -> {
+            Time.runTask(14, () -> {
                 for (Player p : Groups.player) resetPlayer(p);
             })
         );
