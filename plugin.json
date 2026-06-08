@@ -1,0 +1,8 @@
+{
+  "displayName": "TeamSelector",
+  "name": "TeamSelector",
+  "author": "TOWUK",
+  "main": "TeamSelector",
+  "description": "Выбор фракции с цветным ником при входе и смене карты.",
+  "version": "1.0"
+}

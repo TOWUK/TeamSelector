@@ -1,0 +1,39 @@
+apply plugin: "java"
+sourceSets.main.java.srcDirs = ["src"]
+repositories{
+    mavenCentral()
+    ivy{
+        url = 'https://github.com/'
+        patternLayout{artifact '/[organisation]/[module]/releases/download/[revision]/dependencies.jar'}
+        metadataSources{ artifact() }
+    }
+    ivy{
+        url = 'https://github.com/'
+        patternLayout{artifact '/[organisation]/[module]/releases/[revision]/download/dependencies.jar'}
+        metadataSources{ artifact() }
+    }
+    ivy{
+        url = 'https://github.com/'
+        patternLayout{artifact '/[organisation]/[module]/releases/download/master/[revision].jar'}
+        metadataSources{ artifact() }
+    }
+}
+java{
+    targetCompatibility = JavaVersion.VERSION_25
+    sourceCompatibility = JavaVersion.VERSION_25
+}
+ext{
+    mindustryVersion = "latest"
+}
+dependencies{
+    compileOnly mindustryVersion == "be" ? "Anuken:MindustryBuilds:latest" : "Anuken:Mindustry:$mindustryVersion"
+}
+jar{
+    archiveFileName = "TeamSelector.jar"
+    from{
+        configurations.runtimeClasspath.collect{ it.isDirectory() ? it : zipTree(it) }
+    }
+    from(rootDir){
+        include "plugin.json"
+    }
+}
