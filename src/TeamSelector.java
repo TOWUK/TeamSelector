@@ -16,7 +16,7 @@ public class TeamSelector extends Plugin {
     private static final String[][] TEAMS = {
         { "[#ffd37f]", "SHARDED" },
         { "[#f25555]", "CRUX" },
-        { "[#bbbbbb]", "НАБЛЮДАТЬ" },
+        { "[#dadada]", "НАБЛЮДАТЬ" },
     };
     private static final String[][] MENU_OPTIONS = {
         { TEAMS[0][0] + TEAMS[0][1] },
