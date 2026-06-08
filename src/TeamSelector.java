@@ -55,7 +55,7 @@ public class TeamSelector extends Plugin {
                 opt == 0 ? Team.sharded : opt == 1 ? Team.crux : Team.derelict;
             p.name = TEAMS[opt][0] + clean(p.name) + "[]";
             p.team(t);
-            Call.sendMessage(p.name + " " + t.emoji);
+            //Call.sendMessage("+" + t.emoji + " " + p.name); // если кому надо в чатик настрочить
             if (t != Team.derelict) p.checkSpawn();
         });
 
