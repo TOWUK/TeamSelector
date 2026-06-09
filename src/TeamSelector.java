@@ -1,7 +1,6 @@
 import arc.Events;
 import arc.struct.ObjectIntMap;
 import arc.util.CommandHandler;
-import arc.util.Strings;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.game.EventType;
@@ -15,103 +14,67 @@ import mindustry.ui.Menus;
 public class TeamSelector extends Plugin {
 
     private int menuId;
-    private final ObjectIntMap<String> savedTeams = new ObjectIntMap<>();
-    private float mapCenterX, mapCenterY;
+    private final ObjectIntMap<String> saved = new ObjectIntMap<>();
+    private float cx, cy;
 
-    private static final String[] ICONS = {
-        String.valueOf((char) 63356),
-        String.valueOf((char) 63357),
-        String.valueOf((char) 63358),
-    };
-    private static final String[] COLORS = {
-        "[#ffd37f]",
-        "[#f25555]",
-        "[#dadada]",
-    };
-    private static final String[] NAMES = {
-        "Расколотые",
-        "Агрессоры",
-        "Наблюдать",
-    };
     private static final Team[] TEAMS = {
         Team.sharded,
         Team.crux,
         Team.derelict,
     };
-
-    private static final String[][] MENU_OPTIONS = {
-        { COLORS[0] + ICONS[0] + " " + NAMES[0] },
-        { COLORS[1] + ICONS[1] + " " + NAMES[1] },
-        { COLORS[2] + ICONS[2] + " " + NAMES[2] },
+    private static final String[][] OPTS = {
+        { "[#ffd37f]Sharded", "[#f25555]Crux", "[#dadada]View" },
     };
-
-    private static String cleanName(String name) {
-        String clean = Strings.stripColors(name);
-        for (String icon : ICONS) clean = clean.replace(icon, "");
-        return clean.trim();
-    }
 
     @Override
     public void init() {
-        menuId = Menus.registerMenu((p, opt) -> {
-            if (
-                p != null && p.con != null && opt >= 0 && opt < TEAMS.length
-            ) applyTeam(p, opt, true);
+        menuId = Menus.registerMenu((p, i) -> {
+            if (p != null && p.con != null && i >= 0 && i < 3) run(p, i, false);
         });
 
         Events.on(EventType.WorldLoadEvent.class, e -> {
-            savedTeams.clear();
-            mapCenterX = (Vars.world.width() * Vars.tilesize) / 2f;
-            mapCenterY = (Vars.world.height() * Vars.tilesize) / 2f;
-            Time.runTask(30f, () ->
-                Groups.player.each(
-                    p -> p.team() != Team.derelict,
-                    p -> applyTeam(p, 2, true)
-                )
-            );
+            saved.clear();
+            cx = (Vars.world.width() * Vars.tilesize) / 2f;
+            cy = (Vars.world.height() * Vars.tilesize) / 2f;
+            Time.runTask(30f, () -> Groups.player.each(p -> run(p, 2, true)));
         });
 
         Events.on(EventType.PlayerJoin.class, e -> {
             Player p = e.player;
             if (p == null || p.con == null) return;
-            int saved = savedTeams.get(p.uuid(), -1);
-            applyTeam(p, saved != -1 ? saved : 2, saved == -1);
+            int i = saved.get(p.uuid(), -1);
+            run(p, i >= 0 ? i : 2, i < 0);
         });
     }
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
-        handler.<Player>register("ct", "Сменить команду", (args, p) -> {
-            if (p != null && p.con != null) showMenu(p);
+        handler.<Player>register("ct", "", (a, p) -> {
+            if (p != null && p.con != null) Call.menu(
+                p.con,
+                menuId,
+                "",
+                "",
+                OPTS
+            );
         });
     }
 
-    private void showMenu(Player p) {
-        Call.menu(
-            p.con,
-            menuId,
-            "",
-            "[white]    Выбор команды\n[#dadada]Выберите сторону или нажмите Esc",
-            MENU_OPTIONS
-        );
-    }
-
-    private void applyTeam(Player p, int index, boolean showMenu) {
-        if (p.team() == TEAMS[index]) return;
-
-        savedTeams.put(p.uuid(), index);
-        p.name = COLORS[index] + ICONS[index] + " " + cleanName(p.name);
-        p.team(TEAMS[index]);
-
-        if (p.unit() != null) p.unit().kill();
-
-        Call.setCameraPosition(
-            p.con,
-            TEAMS[index].core() != null ? TEAMS[index].core().x : mapCenterX,
-            TEAMS[index].core() != null ? TEAMS[index].core().y : mapCenterY
-        );
-
-        if (index != 2) p.checkSpawn();
-        else if (showMenu) showMenu(p);
+    private void run(Player p, int i, boolean showMenu) {
+        Team t = TEAMS[i];
+        if (p.team() != t) {
+            saved.put(p.uuid(), i);
+            p.team(t);
+            var u = p.unit();
+            if (u != null) u.kill();
+            if (t != Team.derelict) p.checkSpawn();
+            var c = t.core();
+            Call.setCameraPosition(
+                p.con,
+                c != null ? c.x : cx,
+                c != null ? c.y : cy
+            );
+        }
+        if (showMenu) Call.menu(p.con, menuId, "", "", OPTS);
     }
 }
