@@ -1,6 +1,6 @@
 import arc.Events;
-import arc.struct.ObjectIntMap;
-import arc.util.CommandHandler;
+import arc.struct.ObjectMap;
+import arc.util.Strings;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.game.EventType;
@@ -10,71 +10,21 @@ import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.mod.Plugin;
 import mindustry.ui.Menus;
-
 public class TeamSelector extends Plugin {
-
     private int menuId;
-    private final ObjectIntMap<String> saved = new ObjectIntMap<>();
     private float cx, cy;
-
-    private static final Team[] TEAMS = {
-        Team.sharded,
-        Team.crux,
-        Team.derelict,
-    };
-    private static final String[][] OPTS = {
-        { "[#ffd37f]Sharded", "[#f25555]Crux", "[#dadada]View" },
-    };
-
+    private static final String IS = "" + (char)63356, IC = "" + (char)63357;
+    private static final String[] P = {"[#dadada]", "[#ffd37f]" + IS, "[#f25555]" + IC};
+    private static final String[][] OPTS = {{P[1] + "Sharded", P[2] + "Crux"}, {P[0] + "Watch the game"}};
+    private static final Team[] TEAMS = {Team.sharded, Team.crux, Team.derelict};
+    private final ObjectMap<String, String> baseNames = new ObjectMap<>();
     @Override
     public void init() {
-        menuId = Menus.registerMenu((p, i) -> {
-            if (p != null && p.con != null && i >= 0 && i < 3) run(p, i, false);
-        });
-
-        Events.on(EventType.WorldLoadEvent.class, e -> {
-            saved.clear();
-            cx = (Vars.world.width() * Vars.tilesize) / 2f;
-            cy = (Vars.world.height() * Vars.tilesize) / 2f;
-            Time.runTask(30f, () -> Groups.player.each(p -> run(p, 2, true)));
-        });
-
-        Events.on(EventType.PlayerJoin.class, e -> {
-            Player p = e.player;
-            if (p == null || p.con == null) return;
-            int i = saved.get(p.uuid(), -1);
-            run(p, i >= 0 ? i : 2, i < 0);
-        });
+        menuId = Menus.registerMenu((p, opt) -> { if (opt >= 0 && opt < 3 && opt != 2) { p.team(TEAMS[opt]); nick(p); } });
+        Events.on(EventType.WorldLoadEvent.class, e -> { cx = Vars.world.unitWidth() / 2; cy = Vars.world.unitHeight() / 2; Time.runTask(28, () -> Groups.player.each(this::reset)); });
+        Events.on(EventType.PlayerJoin.class, e -> { baseNames.put(e.player.uuid(), Strings.stripColors(e.player.name).replace(IS, "").replace(IC, "").trim()); reset(e.player); });
+        Events.on(EventType.PlayerLeave.class, e -> { baseNames.remove(e.player.uuid()); });
     }
-
-    @Override
-    public void registerClientCommands(CommandHandler handler) {
-        handler.<Player>register("ct", "", (a, p) -> {
-            if (p != null && p.con != null) Call.menu(
-                p.con,
-                menuId,
-                "",
-                "",
-                OPTS
-            );
-        });
-    }
-
-    private void run(Player p, int i, boolean showMenu) {
-        Team t = TEAMS[i];
-        if (p.team() != t) {
-            saved.put(p.uuid(), i);
-            p.team(t);
-            var u = p.unit();
-            if (u != null) u.kill();
-            if (t != Team.derelict) p.checkSpawn();
-            var c = t.core();
-            Call.setCameraPosition(
-                p.con,
-                c != null ? c.x : cx,
-                c != null ? c.y : cy
-            );
-        }
-        if (showMenu) Call.menu(p.con, menuId, "", "", OPTS);
-    }
+    private void reset(Player p) { p.team(Team.derelict); nick(p); Call.setCameraPosition(p.con, cx, cy); Call.menu(p.con, menuId, null, null, OPTS); }
+    private void nick(Player p) { p.name = P[p.team().id % P.length] + baseNames.get(p.uuid(), p.name); }
 }

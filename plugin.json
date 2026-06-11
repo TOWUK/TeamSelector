@@ -3,6 +3,6 @@
   "name": "TeamSelector",
   "author": "TOWUK",
   "main": "TeamSelector",
-  "description": "Выбор фракции.",
-  "version": "1.1"
+  "description": "Меню с выбором фракции.",
+  "version": "1.2"
 }

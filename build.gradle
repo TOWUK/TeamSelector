@@ -36,4 +36,5 @@ jar{
     from(rootDir){
         include "plugin.json"
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
