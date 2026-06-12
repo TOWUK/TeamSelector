@@ -1,6 +1,4 @@
 import arc.Events;
-import arc.struct.ObjectMap;
-import arc.util.Strings;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.game.EventType;
@@ -12,19 +10,21 @@ import mindustry.mod.Plugin;
 import mindustry.ui.Menus;
 public class TeamSelector extends Plugin {
     private int menuId;
-    private float cx, cy;
-    private static final String IS = "" + (char)63356, IC = "" + (char)63357;
-    private static final String[] P = {"[#dadada]", "[#ffd37f]" + IS, "[#f25555]" + IC};
-    private static final String[][] OPTS = {{P[1] + "Sharded", P[2] + "Crux"}, {P[0] + "Watch the game"}};
-    private static final Team[] TEAMS = {Team.sharded, Team.crux, Team.derelict};
-    private final ObjectMap<String, String> baseNames = new ObjectMap<>();
+    private static final Team[] TEAMS = { Team.sharded, Team.crux, Team.derelict };
+    private static final String[] PREFIXES = { "[#ffd37f]" + (char)63356, "[#f25555]" + (char)63357, "[#dadada]" };
+    private static final String[][] OPTS = { { PREFIXES[0] + "Sharded", PREFIXES[1] + "Crux" } };
     @Override
     public void init() {
-        menuId = Menus.registerMenu((p, opt) -> { if (opt >= 0 && opt < 3 && opt != 2) { p.team(TEAMS[opt]); nick(p); } });
-        Events.on(EventType.WorldLoadEvent.class, e -> { cx = Vars.world.unitWidth() / 2; cy = Vars.world.unitHeight() / 2; Time.runTask(28, () -> Groups.player.each(this::reset)); });
-        Events.on(EventType.PlayerJoin.class, e -> { baseNames.put(e.player.uuid(), Strings.stripColors(e.player.name).replace(IS, "").replace(IC, "").trim()); reset(e.player); });
-        Events.on(EventType.PlayerLeave.class, e -> { baseNames.remove(e.player.uuid()); });
+        menuId = Menus.registerMenu((p, opt) -> { if (opt == 0 || opt == 1) applyTeam(p, opt); });
+        Events.on(EventType.WorldLoadEvent.class, e -> Time.runTask(28f, () -> Groups.player.each(p -> applyTeam(p, 2))));
+        Events.on(EventType.PlayerJoin.class, e -> applyTeam(e.player, 2));
     }
-    private void reset(Player p) { p.team(Team.derelict); nick(p); Call.setCameraPosition(p.con, cx, cy); Call.menu(p.con, menuId, null, null, OPTS); }
-    private void nick(Player p) { p.name = P[p.team().id % P.length] + baseNames.get(p.uuid(), p.name); }
+    private void applyTeam(Player p, int index) {
+        p.team(TEAMS[index]);
+        p.name = PREFIXES[index] + p.name.replace(PREFIXES[0], "").replace(PREFIXES[1], "").replace(PREFIXES[2], "");
+        if (index == 2) {
+            Call.setCameraPosition(p.con, Vars.world.unitWidth() / 2f, Vars.world.unitHeight() / 2f);
+            Call.menu(p.con, menuId, null, PREFIXES[2] + "Нажмите Esc чтобы\nостаться наблюдателем", OPTS);
+        }
+    }
 }
