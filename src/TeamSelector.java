@@ -16,7 +16,7 @@ public class TeamSelector extends Plugin {
     @Override
     public void init() {
         menuId = Menus.registerMenu((p, opt) -> { if(opt == 0 || opt == 1) applyTeam(p, opt); });
-        Events.on(EventType.PlayEvent.class, e -> Time.runTask(32f, () -> Groups.player.each(p -> applyTeam(p, 2))));
+        Events.on(EventType.PlayEvent.class, e -> Time.runTask(30f, () -> Groups.player.each(p -> applyTeam(p, 2))));
         Events.on(EventType.PlayerJoin.class, e -> applyTeam(e.player, 2));
     }
     private void applyTeam(Player p, int i) {
