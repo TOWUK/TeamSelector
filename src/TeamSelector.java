@@ -1,5 +1,6 @@
 import arc.Events;
 import arc.util.Time;
+import arc.util.Timer;
 import mindustry.Vars;
 import mindustry.game.EventType;
 import mindustry.game.Team;
@@ -15,18 +16,25 @@ public class TeamSelector extends Plugin {
     private static final String[][] OPTS = {{PREFIXES[0] + "Sharded", PREFIXES[1] + "Crux"}};
     @Override
     public void init() {
-        menuId = Menus.registerMenu((p, opt) -> { if(opt == 0 || opt == 1) applyTeam(p, opt); });
-        Events.on(EventType.PlayEvent.class, e -> Time.runTask(44f, () -> Groups.player.each(p -> applyTeam(p, 2))));
-        Events.on(EventType.PlayerJoin.class, e -> applyTeam(e.player, 2));
+        menuId = Menus.registerMenu((p, opt) -> { if(opt >= 0 && opt < 2) setTeam(p, TEAMS[opt], false); });
+        Events.on(EventType.PlayEvent.class, e -> Time.runTask(44f, () -> Groups.player.each(p -> setTeam(p, Team.derelict, true))));
+        Events.on(EventType.PlayerJoin.class, e -> setTeam(e.player, Team.derelict, true));
+        Timer.schedule(this::checkTeams, 1f, 1f);
     }
-    private void applyTeam(Player p, int i) {
+    private void checkTeams() {
+        if(!Vars.state.isGame()) return;
+        Groups.player.each(p -> { if(!p.name.startsWith(PREFIXES[idx(p.team())])) setTeam(p, p.team(), false); });
+    }
+    private void setTeam(Player p, Team team, boolean showMenu) {
+        int i = idx(team);
         p.team(TEAMS[i]);
-        String base = p.name;
-        for(var pre : PREFIXES) if(base.startsWith(pre)) { base = base.substring(pre.length()); break; }
-        p.name = PREFIXES[i] + base;
-        if(p.con != null && i == 2) {
+        for(var pre : PREFIXES) if(p.name.startsWith(pre)) { p.name = p.name.substring(pre.length()); break; }
+        p.name = PREFIXES[i] + p.name;
+        if(p.unit() != null) p.unit().kill();
+        if(i == 2 && showMenu && p.con != null) {
             Call.setCameraPosition(p.con, Vars.world.unitWidth() / 2f, Vars.world.unitHeight() / 2f);
             Call.menu(p.con, menuId, null, "Нажмите Esc чтобы\nостаться наблюдателем", OPTS);
         }
     }
+    private int idx(Team t) { return t == Team.sharded ? 0 : t == Team.crux ? 1 : 2; }
 }
