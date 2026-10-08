@@ -13,7 +13,7 @@ import mindustry.ui.builder.MenuBuilder;
 import static mindustry.ui.builder.UiBuilder.*;
 public class TS extends Plugin {
     static final Team[] TM = {Team.sharded, Team.crux, Team.derelict};
-    static final String[] TAG = {"[#dadada]", "[#ffd37f]*[]", "[#f25555]*[]"}; // индекс = team.id: 0=derelict, 1=sharded, 2=crux
+    static final String[] TAG = {"[#dadada]", "[#ffd37f][]", "[#f25555][]"}; // индекс = team.id: 0=derelict, 1=sharded, 2=crux
     static final String[] LBL = {TAG[1] + "Sharded", TAG[2] + "Crux", TAG[0] + "Наблюдать"};
     static final int menuId = Menus.registerMenuBuilder((p, r) -> { for(Team t : TM) if(r.is(t.name)) set(p, t, true); });
     @Override public void init(){
