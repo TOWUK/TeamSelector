@@ -28,7 +28,7 @@ public class TS extends Plugin {
 
     static void menu(Player p){
         Call.setCameraPosition(p.con, Vars.world.unitWidth()/2f, Vars.world.unitHeight()/2f);
-        var t = table().add(defaults().pad(8));
+        var t = table().add(defaults());
         for(int i = 0; i < TM.length; i++) t.add(button(LBL[i]).style("cleart").height(60).width(140).pad(30).clicked(TM[i].name)).row();
         MenuBuilder.of(t).id(menuId).title(null).show(p);
     }
