@@ -30,5 +30,5 @@ public class TS extends Plugin {
         var t = table(); for(int i = 0; i < 3; i++){ t.add(btn(i).colspan(i == 2 ? 2 : 1)); if(i == 1) t.row(); }
         MenuBuilder.of(t).id(menuId).title(null).show(p);
     }
-    static ButtonBuilder btn(int i){ return button(LBL[i]).style("cleart").height(60).width(140).pad(30).clicked(TM[i].name); }
+    static ButtonBuilder btn(int i){ return button(LBL[i]).style("cleart").height(60).width(140).pad(25).clicked(TM[i].name); }
 }
