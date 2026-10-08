@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 import static mindustry.ui.builder.UiBuilder.*;
 public class TS extends Plugin {
     static final String[] ICON = {"", "[#ffd37f][]", "[#f25555][]"};
-    static final String[] LBL = {"Наблюдать", "Sharded", "Crux"};
+    static final String[] LBL = {"Наблюдать", "Желтые", "Красные"};
     static final Pattern BLANK = Pattern.compile("[\\p{C}\\p{Z}\\u115F\\u1160\\u3164\\u2800\\uFFA0]");
     static final int menuId = Menus.registerMenuBuilder((p, r) -> { for(int i = 0; i < 3; i++) if(r.is(Team.get(i).name)){ set(p, Team.get(i)); if(Team.get(i).core() != null) p.checkSpawn(); } });
     @Override public void init(){
